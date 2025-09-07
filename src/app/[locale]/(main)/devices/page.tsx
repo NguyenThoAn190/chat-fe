@@ -7,6 +7,7 @@ import {
 
 import { DevicesTable } from "@/components/table/devices-table"
 import DeviceHandler from "@/services/handler/device.handler"
+import SidebarHeader from "@/components/system/side-bar"
 
 export default function Page() {
   const [devices, setDevices] = useState([])
@@ -36,17 +37,18 @@ export default function Page() {
     console.log("Create device clicked")
   }
 
+  const breadcrumbs = [
+    { label: "Trang chủ", href: "/" },
+    { label: "Devices", href: "/devices" },
+  ];
   return (
-    <SidebarInset>
+    <>
+      <SidebarHeader breadcrumbs={breadcrumbs} />
       <div className="flex flex-1 flex-col">
         <div className="@container/main flex flex-1 flex-col gap-2">
           <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
             <PageHeader
               title="Devices"
-              breadcrumbs={[
-                { label: "Dashboard", href: "/dashboard" },
-                { label: "Devices" }
-              ]}
               action={{
                 label: "Create Device",
                 onClick: handleCreateDevice
@@ -62,6 +64,6 @@ export default function Page() {
           </div>
         </div>
       </div>
-    </SidebarInset>
+    </>
   )
 }

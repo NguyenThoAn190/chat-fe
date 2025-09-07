@@ -1,5 +1,6 @@
 'use client'
 
+import SidebarHeader from '@/components/system/side-bar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -470,213 +471,222 @@ function FormattedMessage({ content }: { content: string }) {
         }
     }
 
+    const breadcrumbs = [
+        { label: 'Trang chủ', href: '/' },
+        { label: 'Chats', href: '/chats' },
+        { label: chatHistory.find(c => c.id === currentChatId)?.title || 'Chat', href: '#' },
+    ];
     return (
-        <div className="flex h-full w-full bg-background overflow-hidden relative">
-            {/* Mobile Backdrop */}
-            {isMobileSidebarOpen && (
-                <div
-                    className="fixed inset-0 bg-black/50 z-40 md:hidden"
-                    onClick={() => setIsMobileSidebarOpen(false)}
-                />
-            )}
+        <>
+            <SidebarHeader breadcrumbs={breadcrumbs} />
+            <div className="flex h-full w-full bg-background overflow-hidden relative">
+                {/* Mobile Backdrop */}
+                {isMobileSidebarOpen && (
+                    <div
+                        className="fixed inset-0 bg-black/50 z-40 md:hidden"
+                        onClick={() => setIsMobileSidebarOpen(false)}
+                    />
+                )}
 
-            {/* Main Chat Area */}
-            <div className="flex-1 flex flex-col min-w-0">
-                {/* Chat Header */}
-                <div className="flex items-center justify-between p-3 md:p-4 border-b bg-card/50 backdrop-blur-sm">
-                    {/* Mobile Menu Button */}
-                    <button
-                        onClick={() => setIsMobileSidebarOpen(true)}
-                        className="md:hidden p-2 hover:bg-secondary rounded-lg"
-                    >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                    </button>
+                {/* Main Chat Area */}
+                <div className="flex-1 flex flex-col min-w-0">
+                    {/* Chat Header */}
+                    <div className="flex items-center justify-between p-3 md:p-4 border-b bg-card/50 backdrop-blur-sm">
+                        {/* Mobile Menu Button */}
+                        <button
+                            onClick={() => setIsMobileSidebarOpen(true)}
+                            className="md:hidden p-2 hover:bg-secondary rounded-lg"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                        </button>
 
-                    <h1 className="text-base md:text-lg font-semibold text-foreground truncate">
-                        {chatHistory.find(c => c.id === currentChatId)?.title || 'Chat'}
-                    </h1>
-                    <div className="text-xs md:text-sm text-muted-foreground hidden sm:block">
-                        {messages.length} tin nhắn
+                        <h1 className="text-base md:text-lg font-semibold text-foreground truncate">
+                            {chatHistory.find(c => c.id === currentChatId)?.title || 'Chat'}
+                        </h1>
+                        <div className="text-xs md:text-sm text-muted-foreground hidden sm:block">
+                            {messages.length} tin nhắn
+                        </div>
                     </div>
-                </div>
 
-                {/* Chat Messages Area */}
-                <div className="flex-1 overflow-y-auto p-3 md:p-6">
-                    <div className="space-y-3 md:space-y-4 max-w-none">
-                        {messages.map((m, i) => (
-                            <div
-                                key={i}
-                                className={`flex items-start gap-2 md:gap-3 ${m.role === "user" ? "flex-row-reverse" : "flex-row"}`}
-                            >
-                                {/* Avatar */}
-                                <Avatar className="w-7 h-7 md:w-8 md:h-8 shrink-0">
-                                    {m.role === "user" ? (
-                                        <AvatarFallback className="bg-primary text-primary-foreground text-xs md:text-sm">
-                                            U
-                                        </AvatarFallback>
-                                    ) : (
-                                        <>
-                                            <AvatarImage src="/next.svg" alt="Assistant" />
-                                            <AvatarFallback className="bg-secondary text-secondary-foreground text-xs md:text-sm">
-                                                AI
-                                            </AvatarFallback>
-                                        </>
-                                    )}
-                                </Avatar>
-
-                                {/* Message Bubble */}
+                    {/* Chat Messages Area */}
+                    <div className="flex-1 overflow-y-auto p-3 md:p-6">
+                        <div className="space-y-3 md:space-y-4 max-w-none">
+                            {messages.map((m, i) => (
                                 <div
-                                    className={`max-w-[90%] md:max-w-[85%] rounded-lg px-3 py-2 md:px-4 md:py-3 ${m.role === "user"
-                                        ? "bg-primary text-primary-foreground"
-                                        : "bg-secondary text-secondary-foreground"
-                                        }`}
+                                    key={i}
+                                    className={`flex items-start gap-2 md:gap-3 ${m.role === "user" ? "flex-row-reverse" : "flex-row"}`}
                                 >
-                                    {m.role === "assistant" ? (
-                                        <FormattedMessage content={m.content} />
-                                    ) : (
-                                        <div className="text-xs md:text-sm whitespace-pre-wrap break-words">
-                                            {m.content}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        ))}
+                                    {/* Avatar */}
+                                    <Avatar className="w-7 h-7 md:w-8 md:h-8 shrink-0">
+                                        {m.role === "user" ? (
+                                            <AvatarFallback className="bg-primary text-primary-foreground text-xs md:text-sm">
+                                                U
+                                            </AvatarFallback>
+                                        ) : (
+                                            <>
+                                                <AvatarImage src="/next.svg" alt="Assistant" />
+                                                <AvatarFallback className="bg-secondary text-secondary-foreground text-xs md:text-sm">
+                                                    AI
+                                                </AvatarFallback>
+                                            </>
+                                        )}
+                                    </Avatar>
 
-                        {/* Loading Indicator */}
-                        {loading && (
-                            <div className="flex items-start gap-2 md:gap-3">
-                                <Avatar className="w-7 h-7 md:w-8 md:h-8 shrink-0">
-                                    <AvatarImage src="/next.svg" alt="Assistant" />
-                                    <AvatarFallback className="bg-secondary text-secondary-foreground text-xs md:text-sm">
-                                        AI
-                                    </AvatarFallback>
-                                </Avatar>
-                                <div className="bg-secondary/50 backdrop-blur-sm rounded-lg px-3 py-2 md:px-4 md:py-3 border border-border/20">
-                                    <div className="flex items-center gap-1">
-                                        <div className="flex gap-1">
-                                            <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                                            <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                                            <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce"></div>
-                                        </div>
-                                        <span className="text-xs text-muted-foreground ml-2 font-medium">Đang suy nghĩ</span>
+                                    {/* Message Bubble */}
+                                    <div
+                                        className={`max-w-[90%] md:max-w-[85%] rounded-lg px-3 py-2 md:px-4 md:py-3 ${m.role === "user"
+                                            ? "bg-primary text-primary-foreground"
+                                            : "bg-secondary text-secondary-foreground"
+                                            }`}
+                                    >
+                                        {m.role === "assistant" ? (
+                                            <FormattedMessage content={m.content} />
+                                        ) : (
+                                            <div className="text-xs md:text-sm whitespace-pre-wrap break-words">
+                                                {m.content}
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
-                            </div>
-                        )}
+                            ))}
 
-                        <div ref={bottomRef} />
+                            {/* Loading Indicator */}
+                            {loading && (
+                                <div className="flex items-start gap-2 md:gap-3">
+                                    <Avatar className="w-7 h-7 md:w-8 md:h-8 shrink-0">
+                                        <AvatarImage src="/next.svg" alt="Assistant" />
+                                        <AvatarFallback className="bg-secondary text-secondary-foreground text-xs md:text-sm">
+                                            AI
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <div className="bg-secondary/50 backdrop-blur-sm rounded-lg px-3 py-2 md:px-4 md:py-3 border border-border/20">
+                                        <div className="flex items-center gap-1">
+                                            <div className="flex gap-1">
+                                                <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                                                <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                                                <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce"></div>
+                                            </div>
+                                            <span className="text-xs text-muted-foreground ml-2 font-medium">Đang suy nghĩ</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+
+                            <div ref={bottomRef} />
+                        </div>
+                    </div>
+
+                    {/* Input Area */}
+                    <div className="border-t bg-card/50 backdrop-blur-sm p-3 md:p-4">
+                        <form
+                            className="flex gap-2"
+                            onSubmit={e => {
+                                e.preventDefault();
+                                void send();
+                            }}
+                        >
+                            <Input
+                                value={input}
+                                onChange={e => setInput(e.target.value)}
+                                onKeyDown={onKeyDown}
+                                placeholder="Nhập tin nhắn của bạn..."
+                                disabled={loading}
+                                className="flex-1 text-sm md:text-base"
+                            />
+                            <Button
+                                type="submit"
+                                disabled={loading || !input.trim()}
+                                size="icon"
+                                className="shrink-0 h-9 w-9 md:h-10 md:w-10"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="14"
+                                    height="14"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                    className="md:w-4 md:h-4"
+                                >
+                                    <path d="m22 2-7 20-4-9-9-4Z" />
+                                    <path d="M22 2 11 13" />
+                                </svg>
+                            </Button>
+                        </form>
                     </div>
                 </div>
 
-                {/* Input Area */}
-                <div className="border-t bg-card/50 backdrop-blur-sm p-3 md:p-4">
-                    <form
-                        className="flex gap-2"
-                        onSubmit={e => {
-                            e.preventDefault();
-                            void send();
-                        }}
-                    >
-                        <Input
-                            value={input}
-                            onChange={e => setInput(e.target.value)}
-                            onKeyDown={onKeyDown}
-                            placeholder="Nhập tin nhắn của bạn..."
-                            disabled={loading}
-                            className="flex-1 text-sm md:text-base"
-                        />
-                        <Button
-                            type="submit"
-                            disabled={loading || !input.trim()}
-                            size="icon"
-                            className="shrink-0 h-9 w-9 md:h-10 md:w-10"
-                        >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="14"
-                                height="14"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="md:w-4 md:h-4"
-                            >
-                                <path d="m22 2-7 20-4-9-9-4Z" />
-                                <path d="M22 2 11 13" />
-                            </svg>
-                        </Button>
-                    </form>
-                </div>
-            </div>
-
-            {/* Sidebar - Desktop: right side, Mobile: overlay */}
-            <div className={`
+                {/* Sidebar - Desktop: right side, Mobile: overlay */}
+                <div className={`
                 fixed md:relative top-0 right-0 h-full w-80 md:w-72 lg:w-80 
                 border-l bg-card/95 md:bg-card/50 backdrop-blur-sm flex flex-col shrink-0 z-50
                 transform transition-transform duration-300 ease-in-out
                 ${isMobileSidebarOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
             `}>
-                {/* Sidebar Header */}
-                <div className="p-3 md:p-4 border-b relative">
-                    {/* Mobile Close Button */}
-                    <button
-                        onClick={() => setIsMobileSidebarOpen(false)}
-                        className="absolute top-3 left-3 p-1 hover:bg-secondary rounded-lg md:hidden"
-                    >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
+                    {/* Sidebar Header */}
+                    <div className="p-3 md:p-4 border-b relative">
+                        {/* Mobile Close Button */}
+                        <button
+                            onClick={() => setIsMobileSidebarOpen(false)}
+                            className="absolute top-3 left-3 p-1 hover:bg-secondary rounded-lg md:hidden"
+                        >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
 
-                    <h2 className="font-semibold text-base md:text-lg mb-3 ml-8 md:ml-0">TRỢ LÝ ENJOY SPORT</h2>
-                    <Button
-                        onClick={() => {
-                            createNewChat();
-                            setIsMobileSidebarOpen(false);
-                        }}
-                        className="w-full text-sm"
-                        variant="default"
-                    >
-                        <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                        </svg>
-                        Chat mới
-                    </Button>
-                </div>
+                        <h2 className="font-semibold text-base md:text-lg mb-3 ml-8 md:ml-0">TRỢ LÝ ENJOY SPORT</h2>
+                        <Button
+                            onClick={() => {
+                                createNewChat();
+                                setIsMobileSidebarOpen(false);
+                            }}
+                            className="w-full text-sm"
+                            variant="default"
+                        >
+                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                            </svg>
+                            Chat mới
+                        </Button>
+                    </div>
 
-                {/* Chat History */}
-                <div className="flex-1 p-2 overflow-hidden">
-                    <h3 className="text-xs md:text-sm font-medium text-muted-foreground mb-2 px-2">Lịch sử chat</h3>
-                    <div className="h-full overflow-y-auto">
-                        <div className="space-y-1">
-                            {chatHistory.map((chat) => (
-                                <Button
-                                    key={chat.id}
-                                    variant={currentChatId === chat.id ? "secondary" : "ghost"}
-                                    className="w-full justify-start h-auto p-2 md:p-3 text-left"
-                                    onClick={() => {
-                                        switchChat(chat.id);
-                                        setIsMobileSidebarOpen(false);
-                                    }}
-                                >
-                                    <div className="flex flex-col items-start w-full">
-                                        <span className="font-medium text-xs md:text-sm truncate w-full">
-                                            {chat.title}
-                                        </span>
-                                        <span className="text-xs text-muted-foreground truncate w-full">
-                                            {chat.messages[chat.messages.length - 1]?.content.slice(0, 40)}...
-                                        </span>
-                                    </div>
-                                </Button>
-                            ))}
+                    {/* Chat History */}
+                    <div className="flex-1 p-2 overflow-hidden">
+                        <h3 className="text-xs md:text-sm font-medium text-muted-foreground mb-2 px-2">Lịch sử chat</h3>
+                        <div className="h-full overflow-y-auto">
+                            <div className="space-y-1">
+                                {chatHistory.map((chat) => (
+                                    <Button
+                                        key={chat.id}
+                                        variant={currentChatId === chat.id ? "secondary" : "ghost"}
+                                        className="w-full justify-start h-auto p-2 md:p-3 text-left"
+                                        onClick={() => {
+                                            switchChat(chat.id);
+                                            setIsMobileSidebarOpen(false);
+                                        }}
+                                    >
+                                        <div className="flex flex-col items-start w-full">
+                                            <span className="font-medium text-xs md:text-sm truncate w-full">
+                                                {chat.title}
+                                            </span>
+                                            <span className="text-xs text-muted-foreground truncate w-full">
+                                                {chat.messages[chat.messages.length - 1]?.content.slice(0, 40)}...
+                                            </span>
+                                        </div>
+                                    </Button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        </div>
+        </>
+
     )
 }
