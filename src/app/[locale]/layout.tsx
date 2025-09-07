@@ -14,37 +14,39 @@ const inter = Inter({
 
 const metaContent = {
     vi: {
-        title: "Trang chủ | Vietnam MTB Series",
+        title: "Admin Panel | Enjoysport",
         description:
-            "Khám phá các sự kiện thể thao, giải chạy, đạp xe, bơi lội và nhiều hoạt động hấp dẫn khác trên toàn quốc. Đăng ký, theo dõi và cập nhật thông tin sự kiện mới nhất cùng MTB Series.",
+            "Hệ thống quản trị viên Enjoysport - Quản lý sự kiện thể thao, giải chạy, đạp xe và các hoạt động thể thao trên toàn quốc.",
         keywords: [
+            "admin enjoysport",
+            "quản trị",
             "sự kiện thể thao",
             "giải chạy",
             "đạp xe",
             "bơi lội",
             "marathon",
             "triathlon",
-            "MTB Series",
-            "Vietnam",
-            "giải đua",
+            "Enjoysport",
+            "admin panel",
             "thể thao",
         ],
     },
     en: {
-        title: "Home | Vietnam MTB Series",
+        title: "Admin Panel | Enjoysport",
         description:
-            "Discover sports events, running races, cycling, swimming and many other exciting activities nationwide. Register, follow and update the latest event information with MTB Series.",
+            "Enjoysport Admin System - Manage sports events, running races, cycling and sports activities nationwide.",
         keywords: [
+            "enjoysport admin",
+            "admin panel",
             "sports events",
             "running race",
             "cycling",
             "swimming",
-            "event",
+            "event management",
             "marathon",
             "triathlon",
-            "MTB Series",
-            "Vietnam",
-            "race",
+            "Enjoysport",
+            "administration",
         ],
     },
 };
@@ -67,30 +69,30 @@ export async function generateMetadata({
             description: meta.description,
             images: [
                 {
-                    url: "https://enjoysport.vn/_next/image?url=https%3A%2F%2Fhcm03.vstorage.vngcloud.vn%2Fv1%2FAUTH_63bc1636b6fd456893cd154b1d53ded7%2Fticket%2F51mpSQdA.jpg&w=1920&q=75",
+                    url: "https://enjoysport.vn/admin-logo.jpg",
                 },
             ],
-            url: process.env.NEXT_PUBLIC_DOMAIN || "https://mtbseries.vn",
+            url: process.env.NEXT_PUBLIC_DOMAIN || "https://admin.enjoysport.vn",
             type: "website",
         },
         alternates: {
-            canonical: process.env.NEXT_PUBLIC_DOMAIN || "https://mtbseries.vn",
+            canonical: process.env.NEXT_PUBLIC_DOMAIN || "https://admin.enjoysport.vn",
         },
         keywords: meta.keywords,
         robots: {
-            index: true,
-            follow: true,
-            nocache: false,
+            index: false,
+            follow: false,
+            nocache: true,
             googleBot: {
-                index: true,
-                follow: true,
-                noimageindex: false,
+                index: false,
+                follow: false,
+                noimageindex: true,
             },
         },
-        authors: [{ name: "MTB Series" }],
-        publisher: "MTB Series",
+        authors: [{ name: "Enjoysport Admin" }],
+        publisher: "Enjoysport",
         other: {
-            homepage: process.env.NEXT_PUBLIC_DOMAIN || "https://mtbseries.vn",
+            homepage: process.env.NEXT_PUBLIC_DOMAIN || "https://admin.enjoysport.vn",
         },
     };
 }
