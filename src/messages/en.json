@@ -1,0 +1,170 @@
+{
+  "header": {
+    "home": "Home",
+    "races": "Races",
+    "training": "Training",
+    "about": "VMS",
+    "contact": "Contact",
+    "login": "Login",
+    "register": "Register",
+    "blog_and_news": "Blog & News",
+    "training_course": "Training Course"
+  },
+  "home_page": {
+    "upcoming_races": {
+      "title": "Upcoming Races"
+    },
+    "training_news": {
+      "title": "Training"
+    },
+    "come_sweat_with_us": {
+      "title": "Come Sweat With Us"
+    },
+    "video_exercise_instructions": {
+      "title": "Video Exercise Instructions"
+    },
+    "partner_and_sponsor": {
+      "title": "Partner & Sponsor"
+    },
+    "button_text": {
+      "view_more": "View More",
+      "register": "Register",
+      "register_now": "Register Now"
+    },
+    "no_upcoming_races": "No Upcoming Races"
+  },
+  "event_page": {
+    "event_detail": {
+      "sharing_title": "Share this event",
+      "event_nav": {
+        "info": "Information",
+        "race_distance": "Race Distance",
+        "ranking": "Ranking",
+        "result_and_photo": "Result & Photo",
+        "register": "Register",
+        "partnerpromo": "Partner & Promo"
+      },
+      "event_floating": {
+        "title": "Business Registration",
+        "register_heading": "Register to participate",
+        "price_label": "Price from:",
+        "free": "Free",
+        "ticket_selling": "Ticket Selling Period",
+        "location": "Location",
+        "start_time": "Start Time",
+        "end_time": "End Time",
+        "button_register": "Register",
+        "button_register_group": "Register Group",
+        "button_register_participant": "Register Participant",
+        "registration_business": {
+          "not_opened_yet": "Business registration not opened yet",
+          "expired": "Business registration expired",
+          "not_available": "Business registration not available"
+        },
+        "registration_participant": {
+          "not_opened_yet": "Registration not opened yet",
+          "expired": "Registration expired",
+          "not_available": "Registration not available"
+        },
+        "button_status": {
+          "not_opened": "Not opened",
+          "expired": "Expired",
+          "not_available": "Not available"
+        }
+      },
+      "result_and_photo": {
+        "result": "Result",
+        "photo": "Photo"
+      },
+      "in_progress": {
+        "title": "Events in progress"
+      },
+      "event_card": {
+        "register": "Register",
+        "live": "Live",
+        "upcoming": "Registration opening soon",
+        "event_hot_icon": "Event hot icon",
+        "event_details": "Event details",
+        "event_image": "Event image",
+        "event_date_icon": "Event date icon",
+        "result_and_photo": "Result & Photo"
+      },
+      "event_header": {
+        "title": "Event Details",
+        "date": "Event Date",
+        "location": "Event Location",
+        "organizer": "Event Organizer",
+        "instruction": "Event Introduction"
+      }
+    }
+  },
+  "footer": {
+    "company_info": {
+      "company_name": "Vietnam MTB Series Corporation",
+      "company_address": "57/52 Le Duc Tho, Ward 7, Go Vap, Ho Chi Minh City"
+    },
+    "contact_info": {
+      "zalo_title": "Our Zalo",
+      "whatsapp_title": "Our Whatsapp",
+      "contact_title": "Contact us at",
+      "mail_title": "Mail us at"
+    },
+    "quick_access": {
+      "title": "Quick Access",
+      "home": "Home",
+      "races": "Races",
+      "training": "Training",
+      "about": "About Us"
+    },
+    "support_center": {
+      "title": "Support Center",
+      "buyer_guide": "Buyer Guide",
+      "shipping_policy": "Shipping Policy",
+      "privacy_policy": "Privacy Policy",
+      "terms_and_conditions": "Terms & Conditions"
+    },
+    "copyright": {
+      "text": "Copyright ©",
+      "company": "Vietnam MTB Series Corporation.",
+      "all_rights_reserved": "All rights reserved."
+    }
+  },
+  "blog": {
+    "blog_detail": {
+      "no_registration_info": "No registration information",
+      "not_opened_yet": "Not opened yet",
+      "not_yet_time_to_register": "Not yet time to register",
+      "expired": "Expired",
+      "full": "Full"
+    }
+  },
+  "training": {
+    "training_page": {
+      "training_register_description": "Join professional training courses to improve your fitness, enhance your skills, and prepare for upcoming competitions. Our experienced coaches will accompany you throughout the training process, designing personalized programs for your individual goals. Register today to experience a modern training environment, a dynamic community, and receive many attractive offers!",
+      "training_video_description": "Explore training instruction videos created by professional coaches. The content ranges from basic to advanced exercises, helping you practice with the right technique, improve effectiveness, and prevent injuries. Watch now to start your scientific and safe training journey!",
+      "no_registration_info": "No registration information",
+      "not_opened_yet": "Not opened yet",
+      "not_yet_time_to_register": "Not yet time to register",
+      "expired": "Expired",
+      "full": "Full",
+      "register": "Register",
+      "view_more_trainings": "View more training courses"
+    },
+    "training_detail": {
+      "training_register_description": "Join professional training courses to improve your fitness, enhance your skills, and prepare for upcoming competitions. Our experienced coaches will accompany you throughout the training process, designing personalized programs for your individual goals. Register today to experience a modern training environment, a dynamic community, and receive many attractive offers!",
+      "training_video_description": "Explore training instruction videos created by professional coaches. The content ranges from basic to advanced exercises, helping you practice with the right technique, improve effectiveness, and prevent injuries. Watch now to start your scientific and safe training journey!",
+      "no_registration_info": "No registration information",
+      "not_opened_yet": "Not opened yet",
+      "not_yet_time_to_register": "Not yet time to register",
+      "expired": "Expired",
+      "full": "Full",
+      "": "View more training courses"
+    },
+    "training_card": {
+      "registration_full_title": "Registration for this program is full",
+      "registration_full_message": "The number of registrations for Training Camp 01 is full. See you in the next program.",
+      "close": "Close",
+      "register": "Register"
+    }
+  }
+}

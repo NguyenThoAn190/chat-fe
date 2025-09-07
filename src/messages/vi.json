@@ -1,0 +1,171 @@
+{
+  "header": {
+    "home": "Trang chủ",
+    "races": "Các giải đấu",
+    "training": "Tập luyện",
+    "about": "Về chúng tôi",
+    "contact": "Liên hệ",
+    "login": "Đăng nhập",
+    "register": "Đăng ký",
+    "blog_and_news": "Bài viết & Tin tức",
+    "training_course": "Khóa học tập luyện"
+  },
+  "home_page": {
+    "upcoming_races": {
+      "title": "Các giải đấu sắp tới"
+    },
+    "training_news": {
+      "title": "Tập luyện"
+    },
+    "come_sweat_with_us": {
+      "title": "Tham gia cùng chúng tôi"
+    },
+    "video_exercise_instructions": {
+      "title": "Video hướng dẫn luyện tập"
+    },
+    "partner_and_sponsor": {
+      "title": "Đối tác & Nhà tài trợ"
+    },
+    "button_text": {
+      "view_more": "Xem thêm",
+      "register": "Đăng ký",
+      "register_now": "Đăng ký ngay"
+    },
+    "no_upcoming_races": "Không có giải đấu sắp tới"
+  },
+  "event_page": {
+    "event_detail": {
+      "sharing_title": "Chia sẻ sự kiện này",
+      "event_nav": {
+        "info": "Thông tin",
+        "race_distance": "Cự ly",
+        "ranking": "Bảng xếp hạng",
+        "result_and_photo": "Kết quả & Ảnh",
+        "register": "Đăng ký",
+        "partnerpromo": "Đối tác & Khuyến mãi"
+      },
+      "event_floating": {
+        "title": "Đăng ký doanh nghiệp",
+        "register_heading": "Đăng ký tham gia",
+        "price_label": "Giá chỉ từ:",
+        "free": "Miễn phí",
+        "ticket_selling": "Thời gian bán vé",
+        "location": "Địa điểm",
+        "start_time": "Thời gian bắt đầu",
+        "end_time": "Thời gian kết thúc",
+        "button_register": "Đăng ký",
+        "button_register_group": "Đăng ký nhóm",
+        "button_register_participant": "Đăng ký tham gia",
+        "registration_business": {
+          "not_opened_yet": "Chưa mở đăng ký doanh nghiệp",
+          "expired": "Đã hết hạn đăng ký doanh nghiệp",
+          "not_available": "Không mở đăng ký doanh nghiệp"
+        },
+        "registration_participant": {
+          "not_opened_yet": "Chưa mở đăng ký",
+          "expired": "Đã hết hạn đăng ký",
+          "not_available": "Không mở đăng ký"
+        },
+        "button_status": {
+          "not_opened": "Chưa mở",
+          "expired": "Đã hết hạn",
+          "not_available": "Không mở"
+        }
+      },
+      "result_and_photo": {
+        "result": "Kết quả",
+        "photo": "Hình ảnh"
+      },
+      "in_progress": {
+        "title": "Sự kiện đang diễn ra"
+      },
+      "event_card": {
+        "register": "Đăng ký",
+        "live": "Đang diễn ra",
+        "upcoming": "Sắp mở đăng ký",
+        "event_hot_icon": "Biểu tượng sự kiện hot",
+        "event_details": "Chi tiết sự kiện",
+        "event_image": "Ảnh sự kiện",
+        "event_date_icon": "Biểu tượng ngày diễn ra",
+        "result_and_photo": "Kết quả & Hình ảnh"
+      },
+      "event_header": {
+        "title": "Chi tiết sự kiện",
+        "date": "Ngày diễn ra",
+        "location": "Địa điểm",
+        "organizer": "Người tổ chức",
+        "instruction": "Giới thiệu giải"
+      }
+    }
+  },
+  "footer": {
+    "company_info": {
+      "company_name": "Công ty CP Việt Nam MTB Series",
+      "company_address": "57/52 Lê Đức Thọ, Phường 7, Gò Vấp, TP. HCM"
+    },
+    "contact_info": {
+      "zalo_title": "Zalo",
+      "whatsapp_title": "Whatsapp",
+      "contact_title": "Liên hệ",
+      "mail_title": "Email"
+    },
+    "quick_access": {
+      "title": "Truy cập nhanh",
+      "home": "Trang chủ",
+      "races": "Các giải đấu",
+      "training": "Tập luyện",
+      "about": "Về chúng tôi"
+    },
+    "support_center": {
+      "title": "Trung tâm hỗ trợ",
+      "buyer_guide": "Hướng dẫn mua hàng",
+      "shipping_policy": "Chính sách giao hàng",
+      "privacy_policy": "Chính sách bảo mật",
+      "terms_and_conditions": "Điều kiện & điều khoản"
+    },
+    "copyright": {
+      "text": "Bản quyền ©",
+      "company": "Công ty CP Việt Nam MTB Series.",
+      "all_rights_reserved": "Đã đăng ký Bản quyền."
+    }
+  },
+  "blog": {
+    "blog_detail": {
+      "no_registration_info": "Chưa có thông tin đăng ký",
+      "not_opened_yet": "Chưa mở đăng ký",
+      "not_yet_time_to_register": "Chưa đến thời gian đăng ký",
+      "expired": "Đã hết hạn đăng ký",
+      "full": "Đã đủ số lượng"
+    }
+  },
+  "training": {
+    "training_page": {
+      "training_register_description": "Tham gia các khóa luyện tập chuyên nghiệp để nâng cao thể lực, cải thiện kỹ năng và chuẩn bị tốt nhất cho các giải đấu sắp tới. Đội ngũ huấn luyện viên giàu kinh nghiệm sẽ đồng hành cùng bạn trong suốt quá trình tập luyện, xây dựng giáo án phù hợp với từng mục tiêu cá nhân. Đăng ký ngay hôm nay để trải nghiệm môi trường luyện tập hiện đại, cộng đồng năng động và nhận nhiều ưu đãi hấp dẫn!",
+      "training_video_description": "Khám phá các video hướng dẫn luyện tập được xây dựng bởi đội ngũ huấn luyện viên chuyên nghiệp. Nội dung đa dạng từ các bài tập cơ bản đến nâng cao, giúp bạn rèn luyện đúng kỹ thuật, nâng cao hiệu quả và phòng tránh chấn thương. Xem ngay để bắt đầu hành trình tập luyện khoa học và an toàn!",
+      "no_registration_info": "Chưa có thông tin đăng ký",
+      "not_opened_yet": "Chưa mở đăng ký",
+      "not_yet_time_to_register": "Chưa đến thời gian đăng ký",
+      "expired": "Đã hết hạn",
+      "full": "Đã đủ số lượng",
+      "register": "Đăng ký",
+      "view_more_trainings": "Xem thêm các khóa luyện tập"
+    },
+    "training_detail": {
+      "training_register_description": "Tham gia các khóa luyện tập chuyên nghiệp để nâng cao thể lực, cải thiện kỹ năng và chuẩn bị tốt nhất cho các giải đấu sắp tới. Đội ngũ huấn luyện viên giàu kinh nghiệm sẽ đồng hành cùng bạn trong suốt quá trình tập luyện, xây dựng giáo án phù hợp với từng mục tiêu cá nhân. Đăng ký ngay hôm nay để trải nghiệm môi trường luyện tập hiện đại, cộng đồng năng động và nhận nhiều ưu đãi hấp dẫn!",
+      "training_video_description": "Khám phá các video hướng dẫn luyện tập được xây dựng bởi đội ngũ huấn luyện viên chuyên nghiệp. Nội dung đa dạng từ các bài tập cơ bản đến nâng cao, giúp bạn rèn luyện đúng kỹ thuật, nâng cao hiệu quả và phòng tránh chấn thương. Xem ngay để bắt đầu hành trình tập luyện khoa học và an toàn!",
+      "no_registration_info": "Chưa có thông tin đăng ký",
+      "not_opened_yet": "Chưa mở đăng ký",
+      "not_yet_time_to_register": "Chưa đến thời gian đăng ký",
+      "expired": "Đã hết hạn",
+      "full": "Đã đủ số lượng",
+      "register": "Đăng ký",
+      "view_more_trainings": "Xem thêm các khóa luyện tập"
+    },
+    "training_card": {
+      "registration_full_title": "Hết lượt đăng ký cho chương trình này",
+      "registration_full_message": "Số lượng đăng ký cho chương trình Training Camp 01 đã hết. Hẹn gặp bạn ở chương trình tiếp theo.",
+      "close": "Đóng",
+      "register": "Đăng ký"
+    }
+  }
+}
