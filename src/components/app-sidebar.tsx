@@ -8,6 +8,7 @@ import {
   Frame,
   LifeBuoy,
   Map,
+  MessageCircle,
   PieChart,
   RadioReceiver,
   Send,
@@ -28,6 +29,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
+import { ModeToggle } from "./system/mode-toggle"
 
 const data = {
   user: {
@@ -46,6 +48,11 @@ const data = {
       title: "Devices",
       url: "/devices",
       icon: RadioReceiver,
+    },
+    {
+      title: "Chats",
+      url: "/chats",
+      icon: MessageCircle,
     },
     {
       title: "Models",
@@ -151,15 +158,20 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" asChild>
-              <a href="#">
-                <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
-                  <Command className="size-4" />
-                </div>
-                <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">ENJOY SPORT</span>
-                  <span className="truncate text-xs">Check-in Service</span>
-                </div>
-              </a>
+              <div className="flex w-full items-center justify-between gap-3">
+                <a href="#" className="flex flex-1 items-center gap-3">
+                  <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                    <Command className="size-4" />
+                  </div>
+                  <div className="grid flex-1 text-left text-sm leading-tight">
+                    <span className="truncate font-medium">ENJOY SPORT</span>
+                    <span className="truncate text-xs">Check-in Service</span>
+                  </div>
+                </a>
+                <div><ModeToggle /></div>
+              </div>
+
+
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
