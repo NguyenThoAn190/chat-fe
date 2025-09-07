@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 export const runtime = "nodejs";
 
 const OLLAMA_BASE_URL =
-  process.env.CHATBOT_BASE_URL || "http://localhost:11434";
+  process.env.CHATBOT_BASE_URL || "http://36.50.176.152:11434";
 const BASIC_USER = process.env.CHATBOT_BASIC_USER;
 const BASIC_PASS = process.env.CHATBOT_BASIC_PASS;
 const DEFAULT_MODEL = process.env.DEFAULT_MODEL || "llama3.2:1b-instruct-q4_0";
