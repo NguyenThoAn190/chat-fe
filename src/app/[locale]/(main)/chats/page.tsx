@@ -386,13 +386,31 @@ function FormattedMessage({ content }: { content: string }) {
         const assistantIndex = next.length // vị trí assistant mới
 
         try {
-            // gọi API proxy (stream = true)
+            // Chỉ gửi 5 tin nhắn gần nhất để giảm tải
+            const recentMessages = next.slice(-5);
+
+            // gọi API proxy với cấu hình tối ưu cho server yếu
             const res = await fetch('/api/ollama/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    messages: next.map(m => ({ role: m.role, content: m.content })),
+                    model: "llama3.2:1b-instruct-q4_0",
+                    messages: recentMessages.map(m => ({ role: m.role, content: m.content })),
                     stream: true,
+                    options: {
+                        // Cấu hình tối ưu cho 1 nhân 1 luồng
+                        num_ctx: 512,           // Context vừa phải
+                        num_predict: -1,        // Không giới hạn độ dài output
+                        temperature: 0.5,       // Độ sáng tạo vừa phải
+                        top_p: 0.9,            // Giảm độ phức tạp tính toán
+                        top_k: 40,             // Giảm số lựa chọn token
+                        repeat_penalty: 1.1,    // Tránh lặp từ
+                        num_thread: 1,         // Chỉ dùng 1 luồng
+                        num_batch: 1,          // Xử lý từng token một
+                        mirostat: 2,           // Tự động điều chỉnh độ khó
+                        mirostat_tau: 5.0,     // Ngưỡng perplexity mục tiêu
+                        mirostat_eta: 0.1      // Tốc độ học adaptive
+                    }
                 })
             })
 
