@@ -10,7 +10,315 @@ import { useEffect, useRef, useState } from 'react'
 type Msg = { role: 'user' | 'assistant'; content: string }
 type ChatHistory = { id: string; title: string; messages: Msg[] }
 
-export default function ChatPage() {
+// Component để highlight syntax giống VS Code
+function SyntaxHighlighter({ code, language }: { code: string, language: string }) {
+    const highlightJSX = (code: string) => {
+        const lines = code.split('\n');
+
+        return lines.map((line, lineIndex) => {
+            const tokens = [];
+            let currentIndex = 0;
+
+            // Keywords JS/React
+            const jsKeywords = /\b(import|export|default|function|const|let|var|return|if|else|from|useState|useEffect)\b/g;
+            // Strings
+            const strings = /(["'`])((?:\\.|(?!\1)[^\\])*?)\1/g;
+            // Comments
+            const comments = /(\/\/.*$|\/\*[\s\S]*?\*\/)/g;
+            // JSX tags
+            const jsxTags = /(<\/?[A-Z][a-zA-Z0-9]*>|<\/?[a-z][a-zA-Z0-9]*[^>]*>)/g;
+            // Functions
+            const functions = /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g;
+            // Numbers
+            const numbers = /\b\d+\.?\d*\b/g;
+
+            let processedLine = line;
+            const highlights = [];
+
+            // Collect all matches
+            let match;
+
+            // Keywords
+            jsKeywords.lastIndex = 0;
+            while ((match = jsKeywords.exec(line)) !== null) {
+                highlights.push({
+                    start: match.index,
+                    end: match.index + match[0].length,
+                    type: 'keyword',
+                    text: match[0]
+                });
+            }
+
+            // Strings
+            strings.lastIndex = 0;
+            while ((match = strings.exec(line)) !== null) {
+                highlights.push({
+                    start: match.index,
+                    end: match.index + match[0].length,
+                    type: 'string',
+                    text: match[0]
+                });
+            }
+
+            // Functions
+            functions.lastIndex = 0;
+            while ((match = functions.exec(line)) !== null) {
+                highlights.push({
+                    start: match.index,
+                    end: match.index + match[1].length,
+                    type: 'function',
+                    text: match[1]
+                });
+            }
+
+            // Numbers
+            numbers.lastIndex = 0;
+            while ((match = numbers.exec(line)) !== null) {
+                highlights.push({
+                    start: match.index,
+                    end: match.index + match[0].length,
+                    type: 'number',
+                    text: match[0]
+                });
+            }
+
+            // Sort by position
+            highlights.sort((a, b) => a.start - b.start);
+
+            // Build highlighted line
+            const highlightedTokens = [];
+            let lastEnd = 0;
+
+            highlights.forEach(highlight => {
+                // Add text before highlight
+                if (highlight.start > lastEnd) {
+                    highlightedTokens.push(
+                        <span key={`text-${lastEnd}`} className="text-slate-100">
+                            {line.slice(lastEnd, highlight.start)}
+                        </span>
+                    );
+                }
+
+                // Add highlighted text
+                const className = {
+                    keyword: 'text-purple-400 font-semibold',
+                    string: 'text-green-400',
+                    function: 'text-yellow-300',
+                    number: 'text-blue-300',
+                    comment: 'text-gray-500 italic'
+                }[highlight.type] || 'text-slate-100';
+
+                highlightedTokens.push(
+                    <span key={`highlight-${highlight.start}`} className={className}>
+                        {highlight.text}
+                    </span>
+                );
+
+                lastEnd = highlight.end;
+            });
+
+            // Add remaining text
+            if (lastEnd < line.length) {
+                highlightedTokens.push(
+                    <span key={`text-${lastEnd}`} className="text-slate-100">
+                        {line.slice(lastEnd)}
+                    </span>
+                );
+            }
+
+            return (
+                <div key={lineIndex} className="table-row">
+                    <span className="table-cell text-slate-500 text-right pr-4 select-none w-8 text-xs">
+                        {lineIndex + 1}
+                    </span>
+                    <span className="table-cell">
+                        {highlightedTokens.length > 0 ? highlightedTokens : <span className="text-slate-100">{line}</span>}
+                    </span>
+                </div>
+            );
+        });
+    };
+
+    return (
+        <div className="table w-full font-mono text-sm leading-relaxed">
+            {language === 'jsx' || language === 'js' || language === 'javascript'
+                ? highlightJSX(code)
+                : code.split('\n').map((line, i) => (
+                    <div key={i} className="table-row">
+                        <span className="table-cell text-slate-500 text-right pr-4 select-none w-8 text-xs">
+                            {i + 1}
+                        </span>
+                        <span className="table-cell text-slate-100">{line}</span>
+                    </div>
+                ))
+            }
+        </div>
+    );
+}
+
+// Component để format tin nhắn đẹp hơn
+function FormattedMessage({ content }: { content: string }) {
+    const formatText = (text: string) => {
+        // Xử lý code blocks trước
+        const codeBlockPattern = /```(\w+)?\n([\s\S]*?)```/g;
+        const parts = [];
+        let lastIndex = 0;
+        let match;
+
+        while ((match = codeBlockPattern.exec(text)) !== null) {
+            // Thêm text trước code block
+            if (match.index > lastIndex) {
+                const beforeText = text.slice(lastIndex, match.index);
+                parts.push({ type: 'text', content: beforeText });
+            }
+
+            // Thêm code block
+            parts.push({
+                type: 'code',
+                language: match[1] || 'text',
+                content: match[2].trim()
+            });
+
+            lastIndex = match.index + match[0].length;
+        }
+
+        // Thêm text còn lại
+        if (lastIndex < text.length) {
+            parts.push({ type: 'text', content: text.slice(lastIndex) });
+        }
+
+        // Nếu không có code block, chỉ có text
+        if (parts.length === 0) {
+            parts.push({ type: 'text', content: text });
+        }
+
+        return parts.map((part, partIndex) => {
+            if (part.type === 'code') {
+                return (
+                    <div key={partIndex} className="my-2">
+                        <div className="bg-[#0d1117] rounded-lg overflow-hidden border border-slate-700 shadow-lg">
+                            <div className="flex items-center justify-between px-4 py-2 bg-[#161b22] border-b border-slate-700">
+                                <span className="text-xs font-medium text-slate-300 uppercase tracking-wide">
+                                    {part.language}
+                                </span>
+                                <button
+                                    onClick={() => navigator.clipboard.writeText(part.content)}
+                                    className="text-xs text-slate-400 hover:text-blue-400 transition-colors px-2 py-1 rounded hover:bg-slate-700"
+                                >
+                                    Copy
+                                </button>
+                            </div>
+                            <div className="p-4 overflow-x-auto bg-[#0d1117]">
+                                <SyntaxHighlighter code={part.content} language={part.language || 'text'} />
+                            </div>
+                        </div>
+                    </div>
+                );
+            }            // Xử lý text thông thường
+            const lines = part.content.split('\n');
+
+            return lines.map((line, index) => {
+                const lineKey = `${partIndex}-${index}`;
+
+                // Header patterns
+                if (line.match(/^\d+\.\s\*\*.*\*\*:/)) {
+                    const title = line.replace(/^\d+\.\s\*\*(.*)\*\*:/, '$1');
+                    const content = line.replace(/^\d+\.\s\*\*.*\*\*:\s*/, '');
+                    return (
+                        <div key={lineKey} className="my-3">
+                            <h3 className="font-semibold text-base mb-1">{title}</h3>
+                            {content && <p className="text-sm leading-relaxed ml-4">{content}</p>}
+                        </div>
+                    );
+                }
+
+                // Ví dụ headers
+                if (line.match(/^Ví dụ \d+:/)) {
+                    return (
+                        <div key={lineKey} className="my-1 mt-4 mb-1">
+                            <h4 className="font-semibold text-sm text-primary">{line}</h4>
+                        </div>
+                    );
+                }
+
+                // Numbered list items
+                if (line.match(/^\d+\.\s\*\*/)) {
+                    const match = line.match(/^\d+\.\s\*\*(.*?)\*\*:\s*(.*)/);
+                    if (match) {
+                        return (
+                            <div key={lineKey} className="my-2 ml-4">
+                                <span className="font-semibold">{match[1]}</span>
+                                {match[2] && <span className="ml-2">{match[2]}</span>}
+                            </div>
+                        );
+                    }
+                }
+
+                // Inline code
+                if (line.includes('`') && !line.includes('```')) {
+                    const parts = line.split(/(`[^`]+`)/g);
+                    return (
+                        <p key={lineKey} className="my-2 leading-relaxed">
+                            {parts.map((part, i) =>
+                                part.startsWith('`') && part.endsWith('`')
+                                    ? <code key={i} className="bg-slate-800 text-blue-300 px-2 py-1 rounded text-xs font-mono border border-slate-600">{part.slice(1, -1)}</code>
+                                    : part
+                            )}
+                        </p>
+                    );
+                }
+
+                // Bold text
+                if (line.includes('**')) {
+                    const parts = line.split(/(\*\*.*?\*\*)/g);
+                    return (
+                        <p key={lineKey} className="my-2 leading-relaxed">
+                            {parts.map((part, i) =>
+                                part.startsWith('**') && part.endsWith('**')
+                                    ? <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>
+                                    : part
+                            )}
+                        </p>
+                    );
+                }
+
+                // Bullet points
+                if (line.match(/^\*\s/)) {
+                    return (
+                        <div key={lineKey} className="my-1 ml-4 flex items-start">
+                            <span className="mr-2 mt-2 w-1 h-1 bg-current rounded-full flex-shrink-0"></span>
+                            <span className="text-sm leading-relaxed">{line.replace(/^\*\s/, '')}</span>
+                        </div>
+                    );
+                }
+
+                // Regular paragraphs
+                if (line.trim()) {
+                    return <p key={lineKey} className="my-1 text-sm leading-relaxed">{line}</p>;
+                }
+
+                // Empty lines - only render if not near code blocks
+                const nextLine = lines[index + 1];
+                const prevLine = lines[index - 1];
+
+                // Skip empty lines that are right before/after code blocks
+                if ((nextLine && nextLine.includes('```')) ||
+                    (prevLine && prevLine.includes('```'))) {
+                    return null;
+                }
+
+                // Skip multiple consecutive empty lines
+                if (!line.trim() && !prevLine?.trim()) {
+                    return null;
+                }
+
+                return <div key={lineKey} className="h-2" />;
+            });
+        });
+    };
+
+    return <div className="formatted-message">{formatText(content)}</div>;
+} export default function ChatPage() {
     const [chatHistory, setChatHistory] = useState<ChatHistory[]>([
         {
             id: '1',
@@ -188,9 +496,13 @@ export default function ChatPage() {
                                         : "bg-secondary text-secondary-foreground"
                                         }`}
                                 >
-                                    <div className="text-sm whitespace-pre-wrap break-words">
-                                        {m.content}
-                                    </div>
+                                    {m.role === "assistant" ? (
+                                        <FormattedMessage content={m.content} />
+                                    ) : (
+                                        <div className="text-sm whitespace-pre-wrap break-words">
+                                            {m.content}
+                                        </div>
+                                    )}
                                 </div>
                             </div>
                         ))}
@@ -204,12 +516,14 @@ export default function ChatPage() {
                                         AI
                                     </AvatarFallback>
                                 </Avatar>
-                                <div className="bg-secondary text-secondary-foreground rounded-lg px-4 py-3">
-                                    <div className="flex items-center gap-2">
-                                        <div className="w-2 h-2 bg-current rounded-full animate-pulse"></div>
-                                        <div className="w-2 h-2 bg-current rounded-full animate-pulse delay-75"></div>
-                                        <div className="w-2 h-2 bg-current rounded-full animate-pulse delay-150"></div>
-                                        <span className="text-sm ml-2">Đang trả lời...</span>
+                                <div className="bg-secondary/50 backdrop-blur-sm rounded-lg px-4 py-3 border border-border/20">
+                                    <div className="flex items-center gap-1">
+                                        <div className="flex gap-1">
+                                            <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                                            <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                                            <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce"></div>
+                                        </div>
+                                        <span className="text-xs text-muted-foreground ml-2 font-medium">Đang suy nghĩ</span>
                                     </div>
                                 </div>
                             </div>
