@@ -397,7 +397,7 @@ function FormattedMessage({ content }: { content: string }) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    model: "llama3.2:1b-instruct-q4_0",
+                    model: process.env.DEFAULT_MODEL || 'llama2',
                     messages: recentMessages.map(m => ({ role: m.role, content: m.content })),
                     stream: true,
                     options: {
