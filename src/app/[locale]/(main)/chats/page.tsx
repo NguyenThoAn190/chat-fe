@@ -388,8 +388,9 @@ function FormattedMessage({ content }: { content: string }) {
         const assistantIndex = next.length // vị trí assistant mới
 
         try {
-            // Chỉ gửi tin nhắn cuối cùng (không context) để giảm tải tối đa
-            const recentMessages = [next[next.length - 1]];
+            // Gửi 2 tin nhắn gần nhất để có memory nhưng vẫn nhẹ
+            // Nếu có ít hơn 2 tin nhắn thì gửi tất cả
+            const recentMessages = next.slice(-2);
 
             // gọi API proxy với cấu hình tối ưu cho server yếu
             const res = await fetch('/api/chat', {
@@ -400,12 +401,12 @@ function FormattedMessage({ content }: { content: string }) {
                     messages: recentMessages.map(m => ({ role: m.role, content: m.content })),
                     stream: true,
                     options: {
-                        // Cấu hình SIÊU YẾU - mức tối thiểu để AI vẫn hoạt động
-                        num_ctx: 32,            // Context siêu nhỏ (minimum)
-                        num_predict: 8,         // Chỉ 5-10 từ mỗi phản hồi
-                        temperature: 0.0,       // Hoàn toàn deterministic
-                        top_p: 0.3,            // Giảm mạnh sampling
-                        top_k: 5,              // Chỉ 5 lựa chọn token tốt nhất
+                        // Cấu hình YẾU nhưng có memory
+                        num_ctx: 128,           // Tăng context để nhớ được 1-2 câu trước
+                        num_predict: 12,        // Tăng output để câu trả lời đầy đủ hơn
+                        temperature: 0.0,       // Deterministic để stable
+                        top_p: 0.4,            // Sampling vừa phải
+                        top_k: 8,              // 8 lựa chọn token
                         num_thread: 1,         // 1 luồng
                         num_batch: 1,          // 1 token/lần
                         seed: 42               // Cố định kết quả
