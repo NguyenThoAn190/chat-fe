@@ -388,11 +388,11 @@ function FormattedMessage({ content }: { content: string }) {
         const assistantIndex = next.length // vị trí assistant mới
 
         try {
-            // Chỉ gửi 5 tin nhắn gần nhất để giảm tải
-            const recentMessages = next.slice(-5);
+            // Chỉ gửi tin nhắn cuối cùng (không context) để giảm tải tối đa
+            const recentMessages = [next[next.length - 1]];
 
             // gọi API proxy với cấu hình tối ưu cho server yếu
-            const res = await fetch('/api/ollama/chat', {
+            const res = await fetch('/api/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
@@ -400,18 +400,15 @@ function FormattedMessage({ content }: { content: string }) {
                     messages: recentMessages.map(m => ({ role: m.role, content: m.content })),
                     stream: true,
                     options: {
-                        // Cấu hình tối ưu cho 1 nhân 1 luồng
-                        num_ctx: 512,           // Context vừa phải
-                        num_predict: -1,        // Không giới hạn độ dài output
-                        temperature: 0.5,       // Độ sáng tạo vừa phải
-                        top_p: 0.9,            // Giảm độ phức tạp tính toán
-                        top_k: 40,             // Giảm số lựa chọn token
-                        repeat_penalty: 1.1,    // Tránh lặp từ
-                        num_thread: 1,         // Chỉ dùng 1 luồng
-                        num_batch: 1,          // Xử lý từng token một
-                        mirostat: 2,           // Tự động điều chỉnh độ khó
-                        mirostat_tau: 5.0,     // Ngưỡng perplexity mục tiêu
-                        mirostat_eta: 0.1      // Tốc độ học adaptive
+                        // Cấu hình SIÊU YẾU - mức tối thiểu để AI vẫn hoạt động
+                        num_ctx: 32,            // Context siêu nhỏ (minimum)
+                        num_predict: 8,         // Chỉ 5-10 từ mỗi phản hồi
+                        temperature: 0.0,       // Hoàn toàn deterministic
+                        top_p: 0.3,            // Giảm mạnh sampling
+                        top_k: 5,              // Chỉ 5 lựa chọn token tốt nhất
+                        num_thread: 1,         // 1 luồng
+                        num_batch: 1,          // 1 token/lần
+                        seed: 42               // Cố định kết quả
                     }
                 })
             })
