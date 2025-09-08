@@ -397,7 +397,7 @@ function FormattedMessage({ content }: { content: string }) {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    model: process.env.DEFAULT_MODEL || "enjoysport",
+                    model: process.env.DEFAULT_MODEL || "enjoysport-bot",
                     messages: recentMessages.map(m => ({ role: m.role, content: m.content })),
                     stream: true,
                     options: {
