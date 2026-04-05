@@ -1,690 +1,307 @@
 'use client'
 
-import SidebarHeader from '@/components/system/side-bar';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Separator } from '@/components/ui/separator';
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
+import { toast } from 'sonner';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
 
-type Msg = { role: 'user' | 'assistant'; content: string }
-type ChatHistory = { id: string; title: string; messages: Msg[] }
+type Msg = { id: string; role: 'user' | 'assistant'; content: string }
 
-// Component để highlight syntax giống VS Code
-function SyntaxHighlighter({ code, language }: { code: string, language: string }) {
-    const highlightJSX = (code: string) => {
-        const lines = code.split('\n');
-
-        return lines.map((line, lineIndex) => {
-            const tokens = [];
-            let currentIndex = 0;
-
-            // Keywords JS/React
-            const jsKeywords = /\b(import|export|default|function|const|let|var|return|if|else|from|useState|useEffect)\b/g;
-            // Strings
-            const strings = /(["'`])((?:\\.|(?!\1)[^\\])*?)\1/g;
-            // Comments
-            const comments = /(\/\/.*$|\/\*[\s\S]*?\*\/)/g;
-            // JSX tags
-            const jsxTags = /(<\/?[A-Z][a-zA-Z0-9]*>|<\/?[a-z][a-zA-Z0-9]*[^>]*>)/g;
-            // Functions
-            const functions = /\b([a-zA-Z_$][a-zA-Z0-9_$]*)\s*\(/g;
-            // Numbers
-            const numbers = /\b\d+\.?\d*\b/g;
-
-            let processedLine = line;
-            const highlights = [];
-
-            // Collect all matches
-            let match;
-
-            // Keywords
-            jsKeywords.lastIndex = 0;
-            while ((match = jsKeywords.exec(line)) !== null) {
-                highlights.push({
-                    start: match.index,
-                    end: match.index + match[0].length,
-                    type: 'keyword',
-                    text: match[0]
-                });
-            }
-
-            // Strings
-            strings.lastIndex = 0;
-            while ((match = strings.exec(line)) !== null) {
-                highlights.push({
-                    start: match.index,
-                    end: match.index + match[0].length,
-                    type: 'string',
-                    text: match[0]
-                });
-            }
-
-            // Functions
-            functions.lastIndex = 0;
-            while ((match = functions.exec(line)) !== null) {
-                highlights.push({
-                    start: match.index,
-                    end: match.index + match[1].length,
-                    type: 'function',
-                    text: match[1]
-                });
-            }
-
-            // Numbers
-            numbers.lastIndex = 0;
-            while ((match = numbers.exec(line)) !== null) {
-                highlights.push({
-                    start: match.index,
-                    end: match.index + match[0].length,
-                    type: 'number',
-                    text: match[0]
-                });
-            }
-
-            // Sort by position
-            highlights.sort((a, b) => a.start - b.start);
-
-            // Build highlighted line
-            const highlightedTokens = [];
-            let lastEnd = 0;
-
-            highlights.forEach(highlight => {
-                // Add text before highlight
-                if (highlight.start > lastEnd) {
-                    highlightedTokens.push(
-                        <span key={`text-${lastEnd}`} className="text-slate-100">
-                            {line.slice(lastEnd, highlight.start)}
-                        </span>
-                    );
-                }
-
-                // Add highlighted text
-                const className = {
-                    keyword: 'text-purple-400 font-semibold',
-                    string: 'text-green-400',
-                    function: 'text-yellow-300',
-                    number: 'text-blue-300',
-                    comment: 'text-gray-500 italic'
-                }[highlight.type] || 'text-slate-100';
-
-                highlightedTokens.push(
-                    <span key={`highlight-${highlight.start}`} className={className}>
-                        {highlight.text}
-                    </span>
-                );
-
-                lastEnd = highlight.end;
-            });
-
-            // Add remaining text
-            if (lastEnd < line.length) {
-                highlightedTokens.push(
-                    <span key={`text-${lastEnd}`} className="text-slate-100">
-                        {line.slice(lastEnd)}
-                    </span>
-                );
-            }
-
-            return (
-                <div key={lineIndex} className="table-row">
-                    <span className="table-cell text-slate-500 text-right pr-4 select-none w-8 text-xs">
-                        {lineIndex + 1}
-                    </span>
-                    <span className="table-cell">
-                        {highlightedTokens.length > 0 ? highlightedTokens : <span className="text-slate-100">{line}</span>}
-                    </span>
-                </div>
-            );
-        });
-    };
-
-    return (
-        <div className="table w-full font-mono text-sm leading-relaxed">
-            {language === 'jsx' || language === 'js' || language === 'javascript'
-                ? highlightJSX(code)
-                : code.split('\n').map((line, i) => (
-                    <div key={i} className="table-row">
-                        <span className="table-cell text-slate-500 text-right pr-4 select-none w-8 text-xs">
-                            {i + 1}
-                        </span>
-                        <span className="table-cell text-slate-100">{line}</span>
-                    </div>
-                ))
-            }
-        </div>
-    );
+function cn(...classes: (string | boolean | undefined)[]) {
+  return classes.filter(Boolean).join(' ');
 }
 
-// Component để format tin nhắn đẹp hơn
-function FormattedMessage({ content }: { content: string }) {
-    const formatText = (text: string) => {
-        // Xử lý code blocks trước
-        const codeBlockPattern = /```(\w+)?\n([\s\S]*?)```/g;
-        const parts = [];
-        let lastIndex = 0;
-        let match;
+export default function ChatPage() {
+  const [messages, setMessages] = useState<Msg[]>([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
-        while ((match = codeBlockPattern.exec(text)) !== null) {
-            // Thêm text trước code block
-            if (match.index > lastIndex) {
-                const beforeText = text.slice(lastIndex, match.index);
-                parts.push({ type: 'text', content: beforeText });
-            }
+  // Auto focus input on mount
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
-            // Thêm code block
-            parts.push({
-                type: 'code',
-                language: match[1] || 'text',
-                content: match[2].trim()
-            });
+  // Scroll to bottom when messages change
+  useEffect(() => {
+    bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, loading]);
 
-            lastIndex = match.index + match[0].length;
-        }
+  const send = useCallback(async () => {
+    const text = input.trim();
+    if (!text || loading) return;
 
-        // Thêm text còn lại
-        if (lastIndex < text.length) {
-            parts.push({ type: 'text', content: text.slice(lastIndex) });
-        }
+    abortControllerRef.current?.abort();
+    abortControllerRef.current = new AbortController();
 
-        // Nếu không có code block, chỉ có text
-        if (parts.length === 0) {
-            parts.push({ type: 'text', content: text });
-        }
+    setInput('');
+    setLoading(true);
 
-        return parts.map((part, partIndex) => {
-            if (part.type === 'code') {
-                return (
-                    <div key={partIndex} className="my-1 md:my-2">
-                        <div className="bg-[#0d1117] rounded-lg overflow-hidden border border-slate-700 shadow-lg">
-                            <div className="flex items-center justify-between px-3 py-2 md:px-4 md:py-2 bg-[#161b22] border-b border-slate-700">
-                                <span className="text-xs font-medium text-slate-300 uppercase tracking-wide">
-                                    {part.language}
-                                </span>
-                                <button
-                                    onClick={() => navigator.clipboard.writeText(part.content)}
-                                    className="text-xs text-slate-400 hover:text-blue-400 transition-colors px-2 py-1 rounded hover:bg-slate-700"
-                                >
-                                    Copy
-                                </button>
-                            </div>
-                            <div className="p-2 md:p-4 overflow-x-auto bg-[#0d1117]">
-                                <SyntaxHighlighter code={part.content} language={part.language || 'text'} />
-                            </div>
-                        </div>
-                    </div>
-                );
-            }            // Xử lý text thông thường
-            const lines = part.content.split('\n');
+    const userMsg: Msg = { id: Date.now().toString(), role: 'user', content: text };
+    const newMessages = [...messages, userMsg];
+    setMessages(newMessages);
 
-            return lines.map((line, index) => {
-                const lineKey = `${partIndex}-${index}`;
+    const assistantMsgId = (Date.now() + 1).toString();
 
-                // Header patterns
-                if (line.match(/^\d+\.\s\*\*.*\*\*:/)) {
-                    const title = line.replace(/^\d+\.\s\*\*(.*)\*\*:/, '$1');
-                    const content = line.replace(/^\d+\.\s\*\*.*\*\*:\s*/, '');
-                    return (
-                        <div key={lineKey} className="my-3">
-                            <h3 className="font-semibold text-base mb-1">{title}</h3>
-                            {content && <p className="text-sm leading-relaxed ml-4">{content}</p>}
-                        </div>
-                    );
-                }
+    try {
+      const res = await fetch('/api/ai-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question: text }),
+        signal: abortControllerRef.current.signal,
+      });
 
-                // Ví dụ headers
-                if (line.match(/^Ví dụ \d+:/)) {
-                    return (
-                        <div key={lineKey} className="my-1 mt-4 mb-1">
-                            <h4 className="font-semibold text-sm text-primary">{line}</h4>
-                        </div>
-                    );
-                }
+      if (!res.ok) {
+        throw new Error(`Error: ${res.status}`);
+      }
 
-                // Numbered list items
-                if (line.match(/^\d+\.\s\*\*/)) {
-                    const match = line.match(/^\d+\.\s\*\*(.*?)\*\*:\s*(.*)/);
-                    if (match) {
-                        return (
-                            <div key={lineKey} className="my-2 ml-4">
-                                <span className="font-semibold">{match[1]}</span>
-                                {match[2] && <span className="ml-2">{match[2]}</span>}
-                            </div>
-                        );
-                    }
-                }
+      const data = await res.json();
+      
+      const assistantMsg: Msg = {
+        id: assistantMsgId,
+        role: 'assistant',
+        content: data.text || 'Không có phản hồi'
+      };
 
-                // Inline code
-                if (line.includes('`') && !line.includes('```')) {
-                    const parts = line.split(/(`[^`]+`)/g);
-                    return (
-                        <p key={lineKey} className="my-2 leading-relaxed">
-                            {parts.map((part, i) =>
-                                part.startsWith('`') && part.endsWith('`')
-                                    ? <code key={i} className="bg-slate-800 text-blue-300 px-2 py-1 rounded text-xs font-mono border border-slate-600">{part.slice(1, -1)}</code>
-                                    : part
-                            )}
-                        </p>
-                    );
-                }
+      setMessages([...newMessages, assistantMsg]);
+      inputRef.current?.focus();
+    } catch (error) {
+      if ((error as Error).name === 'AbortError') {
+        return;
+      }
 
-                // Bold text
-                if (line.includes('**')) {
-                    const parts = line.split(/(\*\*.*?\*\*)/g);
-                    return (
-                        <p key={lineKey} className="my-2 leading-relaxed">
-                            {parts.map((part, i) =>
-                                part.startsWith('**') && part.endsWith('**')
-                                    ? <strong key={i} className="font-semibold">{part.slice(2, -2)}</strong>
-                                    : part
-                            )}
-                        </p>
-                    );
-                }
+      const errorMsg: Msg = {
+        id: assistantMsgId,
+        role: 'assistant',
+        content: `Xin lỗi, đã có lỗi xảy ra: ${(error as Error).message}`
+      };
 
-                // Bullet points
-                if (line.match(/^\*\s/)) {
-                    return (
-                        <div key={lineKey} className="my-1 ml-4 flex items-start">
-                            <span className="mr-2 mt-2 w-1 h-1 bg-current rounded-full flex-shrink-0"></span>
-                            <span className="text-sm leading-relaxed">{line.replace(/^\*\s/, '')}</span>
-                        </div>
-                    );
-                }
-
-                // Regular paragraphs
-                if (line.trim()) {
-                    return <p key={lineKey} className="my-1 text-sm leading-relaxed">{line}</p>;
-                }
-
-                // Empty lines - only render if not near code blocks
-                const nextLine = lines[index + 1];
-                const prevLine = lines[index - 1];
-
-                // Skip empty lines that are right before/after code blocks
-                if ((nextLine && nextLine.includes('```')) ||
-                    (prevLine && prevLine.includes('```'))) {
-                    return null;
-                }
-
-                // Skip multiple consecutive empty lines
-                if (!line.trim() && !prevLine?.trim()) {
-                    return null;
-                }
-
-                return <div key={lineKey} className="h-2" />;
-            });
-        });
-    };
-
-    return <div className="formatted-message">{formatText(content)}</div>;
-} export default function ChatPage() {
-    const [chatHistory, setChatHistory] = useState<ChatHistory[]>([
-        {
-            id: '1',
-            title: 'Chat đầu tiên',
-            messages: [{ role: 'assistant', content: 'Xin chào! Hỏi mình bất cứ điều gì 👋' }]
-        }
-    ])
-    const [currentChatId, setCurrentChatId] = useState('1')
-    const [messages, setMessages] = useState<Msg[]>([
-        { role: 'assistant', content: 'Xin chào! Hỏi mình bất cứ điều gì 👋' }
-    ])
-    const [input, setInput] = useState('')
-    const [loading, setLoading] = useState(false)
-    const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
-    const bottomRef = useRef<HTMLDivElement>(null)
-
-    useEffect(() => {
-        bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
-    }, [messages, loading])
-
-    // Tạo chat mới
-    function createNewChat() {
-        const newChatId = Date.now().toString()
-        const newChat: ChatHistory = {
-            id: newChatId,
-            title: `Chat mới ${chatHistory.length + 1}`,
-            messages: [{ role: 'assistant', content: 'Xin chào! Hỏi mình bất cứ điều gì 👋' }]
-        }
-        setChatHistory(prev => [...prev, newChat])
-        setCurrentChatId(newChatId)
-        setMessages(newChat.messages)
+      setMessages([...newMessages, errorMsg]);
+      toast.error('Có lỗi xảy ra khi gọi AI');
+    } finally {
+      setLoading(false);
+      inputRef.current?.focus();
     }
+  }, [input, loading, messages]);
 
-    // Chuyển đổi chat
-    function switchChat(chatId: string) {
-        const chat = chatHistory.find(c => c.id === chatId)
-        if (chat) {
-            setCurrentChatId(chatId)
-            setMessages(chat.messages)
-        }
+  const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      void send();
     }
+  }, [send]);
 
-    // Cập nhật chat hiện tại
-    function updateCurrentChat(newMessages: Msg[]) {
-        setChatHistory(prev =>
-            prev.map(chat =>
-                chat.id === currentChatId
-                    ? { ...chat, messages: newMessages }
-                    : chat
-            )
-        )
-    }
+  return (
+    <>
+      <div className="flex flex-col h-screen w-full bg-background relative overflow-hidden">
+        {isMobileSidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-40 md:hidden"
+            onClick={() => setIsMobileSidebarOpen(false)}
+          />
+        )}
 
-    async function send() {
-        const text = input.trim()
-        if (!text) return
-        setInput('')
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* Header */}
+          <div className="flex items-center justify-between p-3 md:p-4 border-b bg-card/50 backdrop-blur-sm shrink-0">
+            <button
+              onClick={() => setIsMobileSidebarOpen(true)}
+              className="md:hidden p-2 hover:bg-secondary rounded-lg"
+            >
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
 
-        const next = [...messages, { role: 'user' as const, content: text }]
-        setMessages(next)
-        updateCurrentChat(next)
-        setLoading(true)
+            <h1 className="text-base md:text-lg font-semibold truncate">Trợ lý AI</h1>
 
-        // Tạo khung cho assistant để append dần token vào
-        setMessages(prev => [...prev, { role: 'assistant', content: '' }])
-        const assistantIndex = next.length // vị trí assistant mới
-
-        try {
-            // Gửi 2 tin nhắn gần nhất để có memory nhưng vẫn nhẹ
-            // Nếu có ít hơn 2 tin nhắn thì gửi tất cả
-            const recentMessages = next.slice(-2);
-
-            // gọi API proxy với cấu hình tối ưu cho server yếu
-            const res = await fetch('/api/chat', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    model: process.env.DEFAULT_MODEL || "enjoysport-bot",
-                    messages: recentMessages.map(m => ({ role: m.role, content: m.content })),
-                    stream: true,
-                    options: {
-                        // Cấu hình YẾU nhưng có memory
-                        num_ctx: 128,           // Tăng context để nhớ được 1-2 câu trước
-                        num_predict: 12,        // Tăng output để câu trả lời đầy đủ hơn
-                        temperature: 0.0,       // Deterministic để stable
-                        top_p: 0.4,            // Sampling vừa phải
-                        top_k: 8,              // 8 lựa chọn token
-                        num_thread: 1,         // 1 luồng
-                        num_batch: 1,          // 1 token/lần
-                        seed: 42               // Cố định kết quả
-                    }
-                })
-            })
-
-            if (!res.body) throw new Error('No response body')
-
-            const reader = res.body.getReader()
-            const decoder = new TextDecoder()
-
-            let acc = ''
-            while (true) {
-                const { value, done } = await reader.read()
-                if (done) break
-                const chunk = decoder.decode(value, { stream: true })
-                acc += chunk
-
-                // Ollama stream = NDJSON (mỗi dòng 1 JSON)
-                const lines = acc.split('\n')
-                acc = lines.pop() || ''
-
-                for (const line of lines) {
-                    if (!line.trim()) continue
-                    try {
-                        const json = JSON.parse(line)
-                        // mỗi chunk có dạng: { message: { content: "..." }, done: boolean, ... }
-                        const token = json?.message?.content ?? ''
-                        if (token) {
-                            setMessages(prev => {
-                                const copy = [...prev]
-                                copy[assistantIndex] = {
-                                    role: 'assistant',
-                                    content: (copy[assistantIndex]?.content || '') + token
-                                }
-                                updateCurrentChat(copy)
-                                return copy
-                            })
-                        }
-                    } catch {
-                        // bỏ qua dòng parse lỗi (nếu có)
-                    }
-                }
-            }
-        } catch (e) {
-            setMessages(prev => [
-                ...prev.slice(0, assistantIndex),
-                { role: 'assistant', content: `Lỗi: ${(e as Error).message}` }
-            ])
-        } finally {
-            setLoading(false)
-        }
-    }
-
-    function onKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault()
-            void send()
-        }
-    }
-
-    const breadcrumbs = [
-        { label: 'Trang chủ', href: '/' },
-        { label: 'Chats', href: '/chats' },
-        { label: chatHistory.find(c => c.id === currentChatId)?.title || 'Chat', href: '#' },
-    ];
-    return (
-        <>
-            <SidebarHeader breadcrumbs={breadcrumbs} />
-            <div className="flex h-full w-full bg-background overflow-hidden relative">
-                {/* Mobile Backdrop */}
-                {isMobileSidebarOpen && (
-                    <div
-                        className="fixed inset-0 bg-black/50 z-40 md:hidden"
-                        onClick={() => setIsMobileSidebarOpen(false)}
-                    />
-                )}
-
-                {/* Main Chat Area */}
-                <div className="flex-1 flex flex-col min-w-0">
-                    {/* Chat Header */}
-                    <div className="flex items-center justify-between p-3 md:p-4 border-b bg-card/50 backdrop-blur-sm">
-                        {/* Mobile Menu Button */}
-                        <button
-                            onClick={() => setIsMobileSidebarOpen(true)}
-                            className="md:hidden p-2 hover:bg-secondary rounded-lg"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                            </svg>
-                        </button>
-
-                        <h1 className="text-base md:text-lg font-semibold text-foreground truncate">
-                            {chatHistory.find(c => c.id === currentChatId)?.title || 'Chat'}
-                        </h1>
-                        <div className="text-xs md:text-sm text-muted-foreground hidden sm:block">
-                            {messages.length} tin nhắn
-                        </div>
-                    </div>
-
-                    {/* Chat Messages Area */}
-                    <div className="flex-1 overflow-y-auto p-3 md:p-6">
-                        <div className="space-y-3 md:space-y-4 max-w-none">
-                            {messages.map((m, i) => (
-                                <div
-                                    key={i}
-                                    className={`flex items-start gap-2 md:gap-3 ${m.role === "user" ? "flex-row-reverse" : "flex-row"}`}
-                                >
-                                    {/* Avatar */}
-                                    <Avatar className="w-7 h-7 md:w-8 md:h-8 shrink-0">
-                                        {m.role === "user" ? (
-                                            <AvatarFallback className="bg-primary text-primary-foreground text-xs md:text-sm">
-                                                U
-                                            </AvatarFallback>
-                                        ) : (
-                                            <>
-                                                <AvatarImage src="/next.svg" alt="Assistant" />
-                                                <AvatarFallback className="bg-secondary text-secondary-foreground text-xs md:text-sm">
-                                                    AI
-                                                </AvatarFallback>
-                                            </>
-                                        )}
-                                    </Avatar>
-
-                                    {/* Message Bubble */}
-                                    <div
-                                        className={`max-w-[90%] md:max-w-[85%] rounded-lg px-3 py-2 md:px-4 md:py-3 ${m.role === "user"
-                                            ? "bg-primary text-primary-foreground"
-                                            : "bg-secondary text-secondary-foreground"
-                                            }`}
-                                    >
-                                        {m.role === "assistant" ? (
-                                            <FormattedMessage content={m.content} />
-                                        ) : (
-                                            <div className="text-xs md:text-sm whitespace-pre-wrap break-words">
-                                                {m.content}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            ))}
-
-                            {/* Loading Indicator */}
-                            {loading && (
-                                <div className="flex items-start gap-2 md:gap-3">
-                                    <Avatar className="w-7 h-7 md:w-8 md:h-8 shrink-0">
-                                        <AvatarImage src="/next.svg" alt="Assistant" />
-                                        <AvatarFallback className="bg-secondary text-secondary-foreground text-xs md:text-sm">
-                                            AI
-                                        </AvatarFallback>
-                                    </Avatar>
-                                    <div className="bg-secondary/50 backdrop-blur-sm rounded-lg px-3 py-2 md:px-4 md:py-3 border border-border/20">
-                                        <div className="flex items-center gap-1">
-                                            <div className="flex gap-1">
-                                                <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:-0.3s]"></div>
-                                                <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:-0.15s]"></div>
-                                                <div className="w-1.5 h-1.5 bg-muted-foreground/60 rounded-full animate-bounce"></div>
-                                            </div>
-                                            <span className="text-xs text-muted-foreground ml-2 font-medium">Đang suy nghĩ</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            <div ref={bottomRef} />
-                        </div>
-                    </div>
-
-                    {/* Input Area */}
-                    <div className="border-t bg-card/50 backdrop-blur-sm p-3 md:p-4">
-                        <form
-                            className="flex gap-2"
-                            onSubmit={e => {
-                                e.preventDefault();
-                                void send();
-                            }}
-                        >
-                            <Input
-                                value={input}
-                                onChange={e => setInput(e.target.value)}
-                                onKeyDown={onKeyDown}
-                                placeholder="Nhập tin nhắn của bạn..."
-                                disabled={loading}
-                                className="flex-1 text-sm md:text-base"
-                            />
-                            <Button
-                                type="submit"
-                                disabled={loading || !input.trim()}
-                                size="icon"
-                                className="shrink-0 h-9 w-9 md:h-10 md:w-10"
-                            >
-                                <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    width="14"
-                                    height="14"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    className="md:w-4 md:h-4"
-                                >
-                                    <path d="m22 2-7 20-4-9-9-4Z" />
-                                    <path d="M22 2 11 13" />
-                                </svg>
-                            </Button>
-                        </form>
-                    </div>
-                </div>
-
-                {/* Sidebar - Desktop: right side, Mobile: overlay */}
-                <div className={`
-                fixed md:relative top-0 right-0 h-full w-80 md:w-72 lg:w-80 
-                border-l bg-card/95 md:bg-card/50 backdrop-blur-sm flex flex-col shrink-0 z-50
-                transform transition-transform duration-300 ease-in-out
-                ${isMobileSidebarOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
-            `}>
-                    {/* Sidebar Header */}
-                    <div className="p-3 md:p-4 border-b relative">
-                        {/* Mobile Close Button */}
-                        <button
-                            onClick={() => setIsMobileSidebarOpen(false)}
-                            className="absolute top-3 left-3 p-1 hover:bg-secondary rounded-lg md:hidden"
-                        >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                            </svg>
-                        </button>
-
-                        <h2 className="font-semibold text-base md:text-lg mb-3 ml-8 md:ml-0">TRỢ LÝ ENJOY SPORT</h2>
-                        <Button
-                            onClick={() => {
-                                createNewChat();
-                                setIsMobileSidebarOpen(false);
-                            }}
-                            className="w-full text-sm"
-                            variant="default"
-                        >
-                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                            </svg>
-                            Chat mới
-                        </Button>
-                    </div>
-
-                    {/* Chat History */}
-                    <div className="flex-1 p-2 overflow-hidden">
-                        <h3 className="text-xs md:text-sm font-medium text-muted-foreground mb-2 px-2">Lịch sử chat</h3>
-                        <div className="h-full overflow-y-auto">
-                            <div className="space-y-1">
-                                {chatHistory.map((chat) => (
-                                    <Button
-                                        key={chat.id}
-                                        variant={currentChatId === chat.id ? "secondary" : "ghost"}
-                                        className="w-full justify-start h-auto p-2 md:p-3 text-left"
-                                        onClick={() => {
-                                            switchChat(chat.id);
-                                            setIsMobileSidebarOpen(false);
-                                        }}
-                                    >
-                                        <div className="flex flex-col items-start w-full">
-                                            <span className="font-medium text-xs md:text-sm truncate w-full">
-                                                {chat.title}
-                                            </span>
-                                            <span className="text-xs text-muted-foreground truncate w-full">
-                                                {chat.messages[chat.messages.length - 1]?.content.slice(0, 40)}...
-                                            </span>
-                                        </div>
-                                    </Button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+            <div className="flex items-center gap-1 md:gap-2">
+              {loading && (
+                <button
+                  onClick={() => abortControllerRef.current?.abort()}
+                  className="p-2 hover:bg-destructive/10 rounded-lg text-destructive transition-colors"
+                  title="Hủy"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setMessages([]);
+                  inputRef.current?.focus();
+                }}
+                className="hidden sm:flex"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+                Xóa
+              </Button>
             </div>
-        </>
+          </div>
 
-    )
+          {/* Messages Area */}
+          <div 
+            ref={messagesContainerRef}
+            className="flex-1 overflow-y-auto p-3 md:p-6"
+          >
+            <div className="max-w-3xl mx-auto space-y-4">
+              {messages.length === 0 && !loading && (
+                <div className="text-center py-8 md:py-12">
+                  <div className="inline-flex items-center justify-center w-12 h-12 md:w-16 md:h-16 rounded-full bg-primary/10 mb-3 md:mb-4">
+                    <svg className="w-6 h-6 md:w-8 md:h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
+                    </svg>
+                  </div>
+                  <h2 className="text-lg md:text-xl font-semibold mb-1 md:mb-2">Bắt đầu cuộc trò chuyện</h2>
+                  <p className="text-muted-foreground text-sm">Đặt câu hỏi để bắt đầu</p>
+                </div>
+              )}
+
+              {messages.map((m) => (
+                <div
+                  key={m.id}
+                  className={cn(
+                    'flex items-start gap-2 md:gap-3',
+                    m.role === 'user' && 'flex-row-reverse'
+                  )}
+                >
+                  <Avatar className="w-7 h-7 md:w-8 md:h-8 shrink-0">
+                    {m.role === 'user' ? (
+                      <AvatarFallback className="bg-primary text-primary-foreground text-xs">
+                        U
+                      </AvatarFallback>
+                    ) : (
+                      <>
+                        <AvatarImage src="/next.svg" alt="AI" />
+                        <AvatarFallback className="bg-secondary text-xs">
+                          AI
+                        </AvatarFallback>
+                      </>
+                    )}
+                  </Avatar>
+
+                  <div
+                    className={cn(
+                      'max-w-[85%] rounded-2xl px-3 py-2 md:px-4 md:py-3',
+                      m.role === 'user'
+                        ? 'bg-primary text-primary-foreground'
+                        : 'bg-secondary text-secondary-foreground'
+                    )}
+                  >
+                    {m.role === 'assistant' ? (
+                      <div className="prose prose-sm dark:prose-invert max-w-none
+                        prose-headings:mt-2 prose-headings:mb-1
+                        prose-p:my-1
+                        prose-ul:my-1 prose-ol:my-1
+                        prose-li:my-0
+                        prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-code:bg-muted prose-code:text-xs
+                        prose-pre:p-0 prose-pre:bg-transparent
+                        prose-a:text-blue-500
+                      ">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          rehypePlugins={[rehypeHighlight]}
+                        >
+                          {m.content}
+                        </ReactMarkdown>
+                      </div>
+                    ) : (
+                      <p className="text-sm whitespace-pre-wrap break-words">{m.content}</p>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {loading && (
+                <div className="flex items-start gap-2 md:gap-3">
+                  <Avatar className="w-7 h-7 md:w-8 md:h-8 shrink-0">
+                    <AvatarImage src="/next.svg" alt="AI" />
+                    <AvatarFallback className="bg-secondary text-xs">AI</AvatarFallback>
+                  </Avatar>
+                  <div className="bg-secondary rounded-2xl px-3 py-2 md:px-4 md:py-3">
+                    <div className="flex items-center gap-1">
+                      <div className="flex gap-1">
+                        <span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                        <span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-muted-foreground/60 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                        <span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-muted-foreground/60 rounded-full animate-bounce" />
+                      </div>
+                      <span className="text-xs text-muted-foreground ml-2">Đang xử lý...</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div ref={bottomRef} className="h-px" />
+            </div>
+          </div>
+
+          {/* Input Area */}
+          <div className="border-t bg-card/50 backdrop-blur-sm p-3 md:p-4 shrink-0">
+            <form
+              className="max-w-3xl mx-auto flex gap-2"
+              onSubmit={e => {
+                e.preventDefault();
+                void send();
+              }}
+            >
+              <Input
+                ref={inputRef}
+                value={input}
+                onChange={e => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Nhập tin nhắn..."
+                disabled={loading}
+                className="flex-1"
+                autoComplete="off"
+              />
+              <Button
+                type="submit"
+                disabled={loading || !input.trim()}
+                size="icon"
+              >
+                {loading ? (
+                  <svg className="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                  </svg>
+                )}
+              </Button>
+            </form>
+          </div>
+        </div>
+
+        {/* Sidebar - Desktop only
+        <div className="hidden md:flex w-72 lg:w-80 border-l bg-card/95 backdrop-blur-sm flex-col shrink-0">
+          <div className="p-4 border-b">
+            <h2 className="font-semibold text-center">TRỢ LÝ AI</h2>
+          </div>
+
+          <div className="flex-1 px-4 pt-4 overflow-hidden">
+            <div className="text-center text-sm text-muted-foreground">
+              {messages.length > 0 && (
+                <p>{messages.length} tin nhắn</p>
+              )}
+            </div>
+          </div>
+        </div> */}
+      </div>
+    </>
+  );
 }
