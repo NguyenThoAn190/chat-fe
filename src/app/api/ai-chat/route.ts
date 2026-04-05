@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const runtime = "nodejs";
 
-const AI_BASE_URL =
-  process.env.AI_BASE_URL || "http://192.168.1.7:3100";
-const AI_PREDICTION_ID =
-  process.env.AI_PREDICTION_ID || "c2b95b51-9a73-4ce4-a72d-f410c950c766";
+const CHAT_API_BASE_URL =
+  process.env.CHAT_API_BASE_URL || "http://192.168.1.7:3100";
+const CHAT_API_PREDICTION_ID =
+  process.env.CHAT_API_PREDICTION_ID || "c2b95b51-9a73-4ce4-a72d-f410c950c766";
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const url = `${AI_BASE_URL}/api/v1/prediction/${AI_PREDICTION_ID}`;
+    const url = `${CHAT_API_BASE_URL}/api/v1/prediction/${CHAT_API_PREDICTION_ID}`;
 
     const response = await fetch(url, {
       method: "POST",
