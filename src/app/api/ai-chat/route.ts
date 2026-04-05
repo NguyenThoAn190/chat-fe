@@ -10,7 +10,7 @@ const CHAT_API_PREDICTION_ID =
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { question } = body || {};
+    const { question, sessionId, chatId, chatMessageId } = body || {};
 
     if (!question) {
       return NextResponse.json(
@@ -21,12 +21,17 @@ export async function POST(req: NextRequest) {
 
     const url = `${CHAT_API_BASE_URL}/api/v1/prediction/${CHAT_API_PREDICTION_ID}`;
 
+    const requestBody: Record<string, unknown> = {
+      question,
+      chatId: sessionId || chatId || `session-${Date.now()}`,
+    };
+
     const response = await fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ question }),
+      body: JSON.stringify(requestBody),
     });
 
     if (!response.ok) {
@@ -36,17 +41,14 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Try to parse as JSON first
     const contentType = response.headers.get("content-type") || "";
     
     if (contentType.includes("application/json")) {
       const data = await response.json();
-      // Extract text from various possible response formats
       const text = data?.text || data?.response || data?.answer || data?.result || data?.content || data?.message || JSON.stringify(data);
       return NextResponse.json({ text });
     }
 
-    // If not JSON, return as text
     const text = await response.text();
     return NextResponse.json({ text });
   } catch (error) {

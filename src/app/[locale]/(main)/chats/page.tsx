@@ -20,6 +20,7 @@ export default function ChatPage() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [chatId] = useState(() => `chat-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
@@ -55,7 +56,7 @@ export default function ChatPage() {
       const res = await fetch('/api/ai-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: text }),
+        body: JSON.stringify({ question: text, chatId }),
         signal: abortControllerRef.current.signal,
       });
 
@@ -286,21 +287,6 @@ export default function ChatPage() {
             </form>
           </div>
         </div>
-
-        {/* Sidebar - Desktop only
-        <div className="hidden md:flex w-72 lg:w-80 border-l bg-card/95 backdrop-blur-sm flex-col shrink-0">
-          <div className="p-4 border-b">
-            <h2 className="font-semibold text-center">TRỢ LÝ AI</h2>
-          </div>
-
-          <div className="flex-1 px-4 pt-4 overflow-hidden">
-            <div className="text-center text-sm text-muted-foreground">
-              {messages.length > 0 && (
-                <p>{messages.length} tin nhắn</p>
-              )}
-            </div>
-          </div>
-        </div> */}
       </div>
     </>
   );
